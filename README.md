@@ -1,0 +1,1 @@
+"Show of Hands" is a mobile application which allows users to answer informal questions.We are trying to predict the voting behaviour of the people with the help of data collected from this application
