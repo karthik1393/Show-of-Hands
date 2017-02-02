@@ -70,6 +70,14 @@ print(train_bor)
 train_final_b<-TentativeRoughFix(train_bor)
 print(train_final_b)
 getSelectedAttributes(train_final_b)
+##RFE (Recursive feature elimination)
+set.seed(13)
+control<-rfeControl(functions = rfFuncs,method = "repeatedcv",number=10,repeats=3,verbose = FALSE)
+predictors<-names(train_imp)[!names(train_imp)%in% "Party"]
+rfe.train<-rfe(train_imp[,predictors],train_imp[,"Party"],rfeControl = control)
+rfe.train
+plot(rfe.train,type="l",main="imp variables")
+varImp(rfe.train)
 ##train with glm
 train_lm<-glm(Party~Q109244+Q115611+Q98197+HouseholdStatus+EducationLevel+age,data=train_imp,family=binomial)
 summary(train_lm)
@@ -151,6 +159,16 @@ table(train_imp$Party,gbm_pre)
 gbm_pre1<-predict(fit,newdata = test_imp)
 gbm_pre1
 write.csv(gbm_pre1,file = "sub1.csv")
+###ADA BOOST
+ind<-train_imp[,c("Q109244","Q115611","Q113181","Q98197","HouseholdStatus","Income","USER_ID","Q104996","Q98578","age","Gender")]
+set.seed(1001)
+ada_control=trainControl(method = "cv",number=10)
+ada_grid<-expand.grid(iter=100,maxdepth=3,nu=0.1)
+ada<-train(ind,train_imp[,"Party"],method="ada",trControl=ada_control,tuneGrid=ada_grid)
+ada
+ada_test<-predict(ada,newdata = test_imp)
+
+
 ##XGBOOST
 # ?xgboost
 # ?sparse.model.matrix
@@ -179,9 +197,8 @@ imp[225]
 test<-chisq.test(train_imp$Party,y)
 test
 ##SVM
-train_svm<-svm(Party~Q109244+Q115611+Q113181+Q98197+HouseholdStatus+Income+USER_ID+Q104996+Q98578,data=train_imp)
-summary(train_svm)
-svm_predict<-predict(train_svm,newdata=test_imp)
-write.csv(svm_predict,"svm.csv")
-table(train_imp$Party,svm_predict)
+poll_svm<-svm(Party~Q109244+Q115611+Q113181+Q98197+HouseholdStatus+Q104996+Q98578+USER_ID+YOB,data=train_1)
+summary(poll_svm)
+svm_pre<-predict(poll_svm,newdata=test_imp) 
+write.csv(svm_pre,"svm.csv")
 
