@@ -78,6 +78,23 @@ rfe.train<-rfe(train_imp[,predictors],train_imp[,"Party"],rfeControl = control)
 rfe.train
 plot(rfe.train,type="l",main="imp variables")
 varImp(rfe.train)
+##LASSO
+set.seed(1)
+x1<-model.matrix(Party~.,train_imp)[,-1]
+dim(x1)
+y1<-as.numeric(train_imp$Party)
+str(y1)
+la<-10^seq(10,-2,length=100)
+cv_lasso<-cv.glmnet(x1,y1,alpha=1)
+cv_lasso$lambda.min
+cv_lasso$lambda.1se
+lasso<-glmnet(x1,y1,alpha=1,lambda = la)
+plot(lasso)
+lasso_pre<-predict(lasso,type="coefficients",s=cv_lasso$lambda.min)
+plot(lasso_pre)
+lasso_pre
+lasso_pre[lasso_pre!=0]
+
 ##train with glm
 train_lm<-glm(Party~Q109244+Q115611+Q98197+HouseholdStatus+EducationLevel+age,data=train_imp,family=binomial)
 summary(train_lm)
